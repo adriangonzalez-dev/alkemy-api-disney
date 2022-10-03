@@ -49,14 +49,14 @@ create table participation_genre(
 );
 
 insert into categories(name) values 
-('Pelï¿½cula'),
+('Película'),
 ('Serie');
 
 insert into genres(name) values
-('Animacion'),
+('Animación'),
 ('Musical'),
 ('Aventura'),
-('Comedia romantica'),
+('Comedia romántica'),
 ('Comedia'),
 ('Infantil');
 
