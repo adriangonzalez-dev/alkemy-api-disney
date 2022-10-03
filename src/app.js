@@ -9,7 +9,7 @@ let path = require("path");
 //Enrutadores
 const usersRouter = require('./routes/usersRouter');
 const protagonistRouter = require('./routes/api/protagonistRouter');
-const { application } = require('express');
+const moviesRouter = require('./routes/api/moviesRouter')
 
 //Middlewares
 app.use(express.static(path.join(__dirname, "../public")))
@@ -19,6 +19,7 @@ app.use(express.json());
 //middlewares de rutas
 app.use('/auth',usersRouter)
 app.use('/characters',protagonistRouter)
+app.use('/movies', moviesRouter)
 
 app.listen(PORT, ()=>{
     console.log(`Servidor abierto en puerto ${PORT}`)

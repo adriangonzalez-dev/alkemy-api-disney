@@ -26,7 +26,7 @@ module.exports = (sequelize, dataType)=>{
         category_id:{
             type:dataType.INTEGER(11),
             allowNull:false
-        }
+        },
     };
     let config={
         tableName:"participations",

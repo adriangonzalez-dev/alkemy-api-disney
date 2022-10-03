@@ -16,10 +16,12 @@ module.exports = (sequelize, dataType)=>{
             allowNull:false
         },
         age:{
-            type:dataType.INTEGER(11)
+            type:dataType.INTEGER(11),
+            default: 0
         },
         weight:{
-            type:dataType.INTEGER(11)
+            type:dataType.INTEGER(11),
+            default: 0
         },
         history:{
             type:dataType.STRING(500),
@@ -28,7 +30,7 @@ module.exports = (sequelize, dataType)=>{
     };
     let config={
         tableName:"protagonists",
-        timestamps:false
+        timestamps:false,
     };
 
     const Protagonist = sequelize.define(alias, cols, config);

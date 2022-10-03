@@ -2,137 +2,74 @@ const db = require('../../database/models');
 const {validationResult}=require("express-validator");
 const path = require("path");
 const {Op} = require('sequelize')
+const {getAll, getOne, createChar, updateChar, deleteChar, search} = require('../../services/protagonistServices');
+const { notFoundError } = require('../../helpers/notFoundError');
 
 module.exports = {
-    list:(req,res)=>{
-         
-    },
-    detail:(req,res)=>{
-        db.Protagonist.findOne({
-            where:{
-                id: req.params.id
-            }
-        })
-        .then(character=>{
-            res.status(200).json({
-                character
-            })
-        })
-    },
-    create: (req,res)=>{
-
-       let errors = validationResult(req);
-        if(errors.isEmpty()){
-            
-            db.Protagonist.create({
-                name: req.body.name,
-                image: `/public/img/characters/${req.file.filename}`,
-                age: req.body.age ? req.body.age : null,
-                weight: req.body.weight ? req.body.weight : null,
-                history: req.body.history
-            })
-            
-            .then(protagonist=>{
-                res.status(200).json({
-                    created: "ok",
-                    protagonist,
-
-                })
-            })
-                
-        } else {
-            let errorsMsg = Object.entries(errors.mapped()).map(result=>result[1].msg);
-            res.status(203).json({
-                errors: errorsMsg
-            })
-            
+    list: async (req,res)=>{
+        const protagonist = await getAll();
+        if(!protagonist){
+            return notFoundError(404, 'protagonists')
         }
+
+        return res.status(200).json({
+            data: protagonist
+        })
+
+    },
+    detail:async (req,res)=>{
+        const {id} = req.params
+        const character = await getOne(+id);
+        if(!character){
+            return notFoundError(404, 'character',res)
+        }
+        return res.status(200).json({
+            character
+        })
+
+    },
+    create: async (req,res)=>{
+        const protagonist = await createChar(req.body, req.file);
+        if(!protagonist){
+            return res.status(500).json({
+                message: 'internal server error'
+            })
+        }
+
+        return res.status(200).json({
+            created: "ok",
+            protagonist,
+        })
         
     },
-    update: (req,res)=>{
+    update: async (req,res)=>{
 
-        let errors = validationResult(req);
-        if(errors.isEmpty()){
-            
-            db.Protagonist.findByPk(req.params.id)
-                .then(protagonist=>{
-                    if(req.file){
-                        fs.unlinkSync(path.join(__dirname, `../../../public/img/products/${protagonist.image}`))
-                    }
+        await updateChar(req,res)
 
-                    db.Protagonist.update({
-                        name: req.body.name ? req.body.name : protagonist.name,
-                        image: req.file ? `/public/img/characters/${req.file.filename}` : protagonist.image,
-                        age: req.body.age ? req.body.age : protagonist.age,
-                        weight: req.body.weight ? req.body.weight : protagonist.weight,
-                        history: req.body.history ? req.body.history : protagonist.history
-                    },{
-                        where:{
-                            id:req.params.id
-                        }
-                    })
-                    
-                    .then(()=>{
-                        db.Protagonist.findByPk(req.params.id)
-                        .then(edited=>{
-                            res.status(201).json({
-                                updated:"Ok",
-                                edited
-                            })
-                        })
-                    })
-                })
-                
-        } else {
-            let errorsMsg = Object.entries(errors.mapped()).map(result=>result[1].msg);
-            res.status(203).json({
-                errors: errorsMsg
+        return res.status(201).json({
+        updated: 'ok'
+        })
+
+    },
+    destroy:async (req,res)=>{
+
+        await deleteChar(req,res)
+
+        return res.status(200).json({
+            message: 'delete ok'
+        })
+    },
+    search: async (req,res)=>{
+        const protagonists = await search(req)
+
+        if(!protagonists){
+            return res.status(404).json({
+                message: 'no hay resultados'
             })
-            
         }
 
-    },
-    destroy:(req,res)=>{
-
-        db.Protagonist.findByPk({
-            where:{
-                id:req.params.id
-            }
-        })
-
-        .then(protagonist=>{
-            fs.unlinkSync(path.join(__dirname, `../../../public/img/products/${protagonist.image}`))
-        })
-
-        db.Protagonist.destroy({
-            where: {
-                id:req.params.id
-            }
-        })
-    },
-    search:(req,res)=>{
-        db.Protagonist.findAll({
-            include:[{association: 'participations'}],
-            where:{
-                name:{
-                    [Op.like]:req.query.name
-                }
-            }
-        })
-        .then(protagonist=>{
-
-            if(protagonist.length > 0){
-                res.json({
-                    data: {
-                        name:protagonist.name,
-                        image:protagonist.image
-                    }
-                })
-            } else {
-                res.json({
-                    data: 'No existen resultados.'
-                })
-            }
+        return res.status(200).json({
+            protagonists
         })
     },
     filter:(req,res)=>{
