@@ -2,8 +2,7 @@ const {validationResult}= require('express-validator');
 const db = require('../database/models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const process = require('process');
-require('dotenv').config();
+const sendMail = require('../helpers/sendMails');
 const SECRET = process.env.SECRET;
 
 
@@ -19,6 +18,12 @@ module.exports={
                 pass: pass2
             }) 
             .then(user=>{
+                sendMail({
+                    to: user.email,
+                    from:process.env.EMAIL_SENDGRID,
+                    subject:'Bienvenido',
+                    text: 'Gracias por suscribirte!'
+                })
                 res.status(200).json({
                     user
                 })
@@ -26,6 +31,10 @@ module.exports={
             .catch(error=>{
                 console.log(error)
             })
+
+            
+
+
         } else {
             let errorsMsg = Object.entries(errors.mapped()).map(result=>result[1].msg);
             res.status(206).json({
